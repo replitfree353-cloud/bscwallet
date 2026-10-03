@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Trust Wallet</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ðŸ›¡ï¸</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 </head>
 <body>
   <div id="app">
-    <!-- Splash -->
     <div id="splash" class="screen active">
       <div class="splash-logo">
         <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
@@ -23,21 +22,20 @@
       <div class="loader"></div>
     </div>
 
-    <!-- Amount Screen (exact TW style from screenshot) -->
     <div id="main" class="screen">
       <div class="tw-topbar">
-        <button class="circle-btn" id="backBtn">â€¹</button>
+        <button class="circle-btn" id="backBtn">‹</button>
         <div class="tw-title">Amount</div>
-        <button class="circle-btn dots">â€¢â€¢â€¢</button>
+        <button class="circle-btn dots">•••</button>
       </div>
 
       <div class="to-line">
-        To: <span id="toAddress">â€”</span>
+        To: <span id="toAddress">—</span>
       </div>
 
       <div class="amount-area">
         <div class="big-amount" id="displayAmount">0</div>
-        <div class="fiat-line" id="usdValue">â‰ˆ $0.00 <span class="swap">â‡…</span></div>
+        <div class="fiat-line" id="usdValue">≈ $0.00 <span class="swap">⇄</span></div>
       </div>
 
       <div class="token-row">
@@ -58,7 +56,7 @@
         <button class="np">1</button><button class="np">2</button><button class="np">3</button>
         <button class="np">4</button><button class="np">5</button><button class="np">6</button>
         <button class="np">7</button><button class="np">8</button><button class="np">9</button>
-        <button class="np">.</button><button class="np">0</button><button class="np del">âŒ«</button>
+        <button class="np">.</button><button class="np">0</button><button class="np del">⌫</button>
       </div>
 
       <div class="bottom-bar">
@@ -66,23 +64,22 @@
       </div>
     </div>
 
-    <!-- Review / Confirm overlay -->
     <div id="review" class="screen">
       <div class="tw-topbar">
-        <button class="circle-btn" id="backToAmount">â€¹</button>
+        <button class="circle-btn" id="backToAmount">‹</button>
         <div class="tw-title">Confirm</div>
         <div style="width:40px"></div>
       </div>
       <div class="review-body">
         <div class="token-circle-lg">T</div>
         <div class="rev-amount" id="revAmount">0 USDT</div>
-        <div class="rev-fiat" id="revFiat">â‰ˆ $0.00</div>
+        <div class="rev-fiat" id="revFiat">≈ $0.00</div>
 
         <div class="detail-card">
-          <div class="d-row"><span>To</span><span class="mono" id="revTo">â€”</span></div>
+          <div class="d-row"><span>To</span><span class="mono" id="revTo">—</span></div>
           <div class="d-row"><span>Network</span><span>BNB Smart Chain</span></div>
           <div class="d-row"><span>Token</span><span>USDT</span></div>
-          <div class="d-row"><span>Network fee</span><span class="muted">â‰ˆ 0.0003 BNB</span></div>
+          <div class="d-row"><span>Network fee</span><span class="muted">≈ 0.0003 BNB</span></div>
         </div>
 
         <div class="wallet-strip">
@@ -99,7 +96,6 @@
       </div>
     </div>
 
-    <!-- Success -->
     <div id="success" class="screen">
       <div class="success-wrap">
         <div class="check-circle">
